@@ -6,6 +6,10 @@
 #include <functional>
 #include <iomanip>
 #include <limits>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <map>
 
 class Fish {
   public:
@@ -44,7 +48,7 @@ class Rod {
   int size;
   int price = 0;
 
-  Rod() : name("Wooden Rod"), rarity("Common"), height(30), width(90), price(0) {
+  Rod() : name("Wooden Rod"), rarity("Common"), height(4), width(4), price(0) {
     size = height * width;
   }
   Rod(std::string rdName, std::string rdRarity, int rdHeight, int rdWidth, int rdPrice)
@@ -55,12 +59,32 @@ class Rod {
 
 class Player {
   public:
-  int currency = 1000000;
+  int currency = 20;
   std::vector<Fish> fishBasket;
   std::vector<Junk> junkBasket;
   Rod currentRod;
   std::vector<Rod> ownedRods;
 };
+
+std::map<std::string, int> loadConfig(const std::string& filename) {
+  std::map<std::string, int> config;
+  std::ifstream file(filename);
+  std::string line;
+
+  while (std::getline(file, line)) {
+    std::istringstream iss(line);
+    std::string key;
+    if (std::getline(iss, key, '=')) {
+      std::string valueStr;
+      if (std::getline(iss, valueStr)) {
+        int value = std::stoi(valueStr);
+        config[key] = value;
+      }
+    }
+  }
+
+  return config;
+}
 
 void drawSea(int seaY, int seaX,
              const std::vector<std::pair<int, int>>& fishPositions,
@@ -164,6 +188,8 @@ void catchFish(Player& player) {
   std::vector<std::pair<int, int>> junkPositions;
   std::vector<Fish> generatedFishes;
   std::vector<Junk> generatedJunk;
+  std::vector<Fish> caughtFish;
+  std::vector<Junk> caughtJunk;
 
   int rodHeight = player.currentRod.height;
   int rodWidth = player.currentRod.width;
@@ -202,23 +228,24 @@ void catchFish(Player& player) {
 
   drawSea(seaY, seaX, fishPositions, junkPositions, hookY, hookX, rodHeight, rodWidth);
 
-  bool caughtFish = false;
-  bool caughtJunk = false;
+  bool isCaughtFish = false;
+  bool isCaughtJunk = false;
 
-  for (int i = 0; i < fishPositions.size(); ++i) {
-    int fishY = fishPositions[i].first;
-    int fishX = fishPositions[i].second;
+  for (int f = 0; f < fishPositions.size(); ++f) {
+    int fishY = fishPositions[f].first;
+    int fishX = fishPositions[f].second;
 
     if (fishX >= hookX && fishX < hookX + rodWidth &&
       fishY >= hookY && fishY < hookY + rodHeight) {
-      player.fishBasket.push_back(generatedFishes[i]); // only add caught fish
-      caughtFish = true;
+      player.fishBasket.push_back(generatedFishes[f]); // only add caught fish
+      caughtFish.push_back(generatedFishes[f]);
+      isCaughtFish = true;
     }
   }
 
-  if (caughtFish) { // display resault
+  if (isCaughtFish) { // display resault
     std::cout << "\nFish caught:" << "\n";
-    for (const Fish fish : generatedFishes) {
+    for (const Fish fish : caughtFish) {
       std::cout << "Name: " << fish.name 
                 << " size: " << fish.size 
                 << " value: " << fish.value << "\n";
@@ -232,20 +259,21 @@ void catchFish(Player& player) {
     if (junkX >= hookX && junkX < hookX + rodWidth &&
       junkY >= hookY && junkY < hookY + rodHeight) {
       player.junkBasket.push_back(generatedJunk[j]);
-      caughtJunk = true;
+      caughtJunk.push_back(generatedJunk[j]);
+      isCaughtJunk = true;
     }
   }
 
-  if (caughtJunk) { // display resault
+  if (isCaughtFish) { // display resault
     std::cout << "\nJunk caught:" << "\n";
-    for (const Junk junk : generatedJunk) {
+    for (const Junk junk : caughtJunk) {
       std::cout << "Name: " << junk.name 
                 << " size: " << junk.size 
                 << " value: " << junk.value << "\n";
     }      
   }
 
-  if (!caughtFish && !caughtJunk) {
+  if (!isCaughtFish && !isCaughtJunk) {
     std::cout << "Nothing was caught...\n";
   }
 }
@@ -347,6 +375,13 @@ void showCommands(const std::unordered_map<std::string, std::function<void()>>& 
 int main() {
   seedRandom(); // random number generator
   Player player;
+
+  std::map<std::string, int> config = loadConfig("settings.ini");
+
+  player.currency = config["currency"];
+  player.currentRod.height = config["rod_height"];
+  player.currentRod.width = config["rod_width"];
+  player.currentRod.size = player.currentRod.height * player.currentRod.width;
 
   std::vector<Rod*> rods;
   // Common
