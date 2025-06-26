@@ -44,7 +44,7 @@ class Rod {
   int size;
   int price = 0;
 
-  Rod() : name("Wooden Rod"), rarity("Common"), height(2), width(2), price(0) {
+  Rod() : name("Wooden Rod"), rarity("Common"), height(30), width(90), price(0) {
     size = height * width;
   }
   Rod(std::string rdName, std::string rdRarity, int rdHeight, int rdWidth, int rdPrice)
@@ -62,14 +62,38 @@ class Player {
   std::vector<Rod> ownedRods;
 };
 
-void drawSea(int seaY, int seaX, int fishY, int fishX, int junkY, int junkX, int hookY, int hookX, int hookHeight, int hookWidth) {
+void drawSea(int seaY, int seaX,
+             const std::vector<std::pair<int, int>>& fishPositions,
+             const std::vector<std::pair<int, int>>& junkPositions,
+             int hookY, int hookX,
+             int hookHeight, int hookWidth) {
   for (int y = 0; y < seaY; y++) {
     for (int x = 0; x < seaX; x++) {
-      if (y == fishY && x == fishX) {
-        std::cout << "F"; // fish
-      } else if (y == junkY && x == junkX) {
-        std::cout << "J"; // junk
-      } else if (y >= hookY && y < hookY + hookHeight &&
+
+      bool isFish = false;
+      bool isJunk = false;
+
+      for (const auto& fish : fishPositions) {
+        if (y == fish.first && x == fish.second) {
+          std::cout << "F"; // fish
+          isFish = true;
+          break;
+        }
+      }
+
+      if (isFish) continue;
+
+      for (const auto& junk : junkPositions) {
+        if (y == junk.first && x == junk.second) {
+          std::cout << "J";
+          isJunk = true;
+          break;
+        }
+      }
+
+      if (isJunk) continue;
+      
+      if (y >= hookY && y < hookY + hookHeight &&
                  x >= hookX && x < hookX + hookWidth) {
         std::cout << "#"; // hook
       } else {
@@ -90,13 +114,11 @@ std::string randomName(const std::vector<std::string>& names) {
 };
 
 int randomFishSize() { // generate random size
-  seedRandom();
   int random = rand() % (300 - 3 + 1) + 3;
   return random;
 };
 
 int randomJunkSize() { // generate random size
-  seedRandom();
   int random = rand() % (150 - 3 + 1) + 3;
   return random;
 };
@@ -132,48 +154,95 @@ std::vector<std::string> junkNames = { // junk items
   "Mysterious Glass Bottle", "Old Ship Wheel Fragment", "Dented Oil Drum", "Salt-Corroded Pocket Watch",
 };
 
-void catchFish(Player& player, Fish& fish, Junk& junk) {
-  seedRandom();
+void catchFish(Player& player) {
   int seaY = 30;
   int seaX = 90;
+  int spawnRandomFishes = (rand() % 4) + 1;
+  int spawnRandomJunk = (rand() % 15) + 1;
+
+  std::vector<std::pair<int, int>> fishPositions;
+  std::vector<std::pair<int, int>> junkPositions;
+  std::vector<Fish> generatedFishes;
+  std::vector<Junk> generatedJunk;
 
   int rodHeight = player.currentRod.height;
   int rodWidth = player.currentRod.width;
-  int fishY = rand() % seaY;
-  int fishX = rand() % seaX;
-  int junkY = rand() % seaY;
-  int junkX = rand() % seaX;
   int hookY = rand() % (seaY - rodHeight + 1);
   int hookX = rand() % (seaX - rodWidth + 1);
+
+  for (int f = 0; f < spawnRandomFishes; f++) {
+    // generate fish stats
+    std::string fishName = randomName(fishNames);
+    int fishSize = randomFishSize();
+    int fishValue = calculateFishValue(fishSize);
+    Fish fish(fishName, fishSize, fishValue); // fish object
+
+    int fishY = rand() % seaY;
+    int fishX = rand() % seaX;
+      
+    fishPositions.emplace_back(fishY, fishX);
+    generatedFishes.push_back(fish);
+  }
+
+  for (int j = 0; j < spawnRandomJunk; j++) {
+    // generate junk stats
+    std::string junkName = randomName(junkNames);
+    int junkSize = randomJunkSize();
+    int junkValue = calculateJunkValue(junkSize);
+    Junk junk(junkName, junkSize, junkValue); // junk object
+
+    int junkY = rand() % seaY;
+    int junkX = rand() % seaX;
+    junkPositions.emplace_back(junkY, junkX);
+    generatedJunk.push_back(junk);
+  }
 
   std::cout << "Your hook landed from (" << hookX << ", " << hookY << ") to ("
             << (hookX + rodWidth - 1) << ", " << (hookY + rodHeight - 1) << ")!\n";
 
-  drawSea(seaY, seaX, fishY, fishX, junkY, junkX, hookY, hookX, rodHeight, rodWidth);
+  drawSea(seaY, seaX, fishPositions, junkPositions, hookY, hookX, rodHeight, rodWidth);
 
   bool caughtFish = false;
   bool caughtJunk = false;
 
-  if (fishX >= hookX && fishX < hookX + rodWidth &&
-    fishY >= hookY && fishY < hookY + rodHeight) {
-    player.fishBasket.push_back(fish); // add fish to basket
-    caughtFish = true;
-  } 
+  for (int i = 0; i < fishPositions.size(); ++i) {
+    int fishY = fishPositions[i].first;
+    int fishX = fishPositions[i].second;
 
-  if (junkX >= hookX && junkX < hookX + rodWidth &&
+    if (fishX >= hookX && fishX < hookX + rodWidth &&
+      fishY >= hookY && fishY < hookY + rodHeight) {
+      player.fishBasket.push_back(generatedFishes[i]); // only add caught fish
+      caughtFish = true;
+    }
+  }
+
+  if (caughtFish) { // display resault
+    std::cout << "\nFish caught:" << "\n";
+    for (const Fish fish : generatedFishes) {
+      std::cout << "Name: " << fish.name 
+                << " size: " << fish.size 
+                << " value: " << fish.value << "\n";
+    }      
+  }
+
+  for (int j = 0; j < junkPositions.size(); j++) {
+    int junkY = junkPositions[j].first;
+    int junkX = junkPositions[j].second;
+
+    if (junkX >= hookX && junkX < hookX + rodWidth &&
       junkY >= hookY && junkY < hookY + rodHeight) {
-    player.junkBasket.push_back(junk);
-    caughtJunk = true;
-  }
-  
-  if (caughtFish) {
-    std::cout << "Fish caught" << "\n";
-    std::cout << fish.name << " size: " << fish.size << " value: " << fish.value << "\n";
+      player.junkBasket.push_back(generatedJunk[j]);
+      caughtJunk = true;
+    }
   }
 
-  if (caughtJunk) {
-    std::cout << "Junk caught" << "\n";
-    std::cout << junk.name << " size: " << junk.size << " value: " << junk.value << "\n";
+  if (caughtJunk) { // display resault
+    std::cout << "\nJunk caught:" << "\n";
+    for (const Junk junk : generatedJunk) {
+      std::cout << "Name: " << junk.name 
+                << " size: " << junk.size 
+                << " value: " << junk.value << "\n";
+    }      
   }
 
   if (!caughtFish && !caughtJunk) {
@@ -276,6 +345,7 @@ void showCommands(const std::unordered_map<std::string, std::function<void()>>& 
 }
 
 int main() {
+  seedRandom(); // random number generator
   Player player;
 
   std::vector<Rod*> rods;
@@ -302,24 +372,12 @@ int main() {
   bool startGame = true;
 
   while (startGame) {
-    // generate fish stats
-    std::string fishName = randomName(fishNames);
-    int fishSize = randomFishSize();
-    int fishValue = calculateFishValue(fishSize);
-    Fish fish(fishName, fishSize, fishValue); // fish object
-
-    // generate junk stats
-    std::string junkName = randomName(junkNames);
-    int junkSize = randomJunkSize();
-    int junkValue = calculateJunkValue(junkSize);
-    Junk junk(junkName, junkSize, junkValue); // fish object
-
     std::string command;
     std::cout << "\nenter your command: ";
     std::getline(std::cin, command); // read user's full line
 
     commands["fish"] = [&]() { // captures everything by reference, can read/write external variables
-      catchFish(player, fish, junk);
+      catchFish(player);
     };
 
     commands["stats"] = [&]() {
