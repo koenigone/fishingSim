@@ -302,6 +302,42 @@ void showJunkBasket(Player& p) { // show current junk basket
   }
 }
 
+void sellAllFish(Player& p) { // sell FISH
+  if (p.fishBasket.size() > 0) {
+    int totalEarned = 0;
+    
+    for (const Fish& fish : p.fishBasket) {
+      totalEarned += fish.value;
+    }
+    
+    p.currency += totalEarned;
+    p.fishBasket.clear();
+    
+    std::cout << "You sold all your fish for: " << totalEarned << " currency!\n";
+    std::cout << "Your new balance: " << p.currency << " currency.\n";
+  } else {
+    std::cout << "Your fish basket is empty!\n";
+  }
+}
+
+void sellAllJunk(Player& p) { // sell JUNK
+  if (p.junkBasket.size() > 0) {
+    int totalEarned = 0;
+    
+    for (const Junk& junk : p.junkBasket) {
+      totalEarned += junk.value;
+    }
+    
+    p.currency += totalEarned;
+    p.junkBasket.clear();
+    
+    std::cout << "You sold all your junk for: " << totalEarned << " currency!\n";
+    std::cout << "Your new balance: " << p.currency << " currency.\n";
+  } else {
+    std::cout << "Your junk basket is empty!\n";
+  }
+}
+
 void rodShop(Player& player, std::vector<Rod*> rods) {
   std::cout << "Available Rods:" << "\n";
 
@@ -385,19 +421,19 @@ int main() {
 
   std::vector<Rod*> rods;
   // Common
-  rods.push_back(new Rod("Rod of Emberwake", "Common", 3, 3, 500));
-  rods.push_back(new Rod("Rod of Verdant Bloom", "Common", 4, 3, 650));
-  rods.push_back(new Rod("Rod of Silent Tempests", "Common", 4, 4, 1000));
-  rods.push_back(new Rod("Rod of Whispering Stones", "Common", 4, 4, 1000));
+  rods.push_back(new Rod("Rod of Emberwake", "Common", 5, 5, 500));
+  rods.push_back(new Rod("Rod of Verdant Bloom", "Common", 6, 6, 650));
+  rods.push_back(new Rod("Rod of Silent Tempests", "Common", 7, 6, 1000));
+  rods.push_back(new Rod("Rod of Whispering Stones", "Common", 7, 7, 1200));
 
   // Rare
-  rods.push_back(new Rod("Rod of the Drowned Spire", "Rare", 15, 4, 1000));
-  rods.push_back(new Rod("Rod of the Tidesong", "Rare", 3, 2, 200));
-  rods.push_back(new Rod("Rod of Eternal Dusk", "Rare" ,5, 4, 1000));
+  rods.push_back(new Rod("Rod of the Drowned Spire", "Rare", 8, 9, 1600));
+  rods.push_back(new Rod("Rod of the Tidesong", "Rare", 9, 9, 1900));
+  rods.push_back(new Rod("Rod of Eternal Dusk", "Rare", 10, 10, 2200));
 
   // Ultra Rare
-  rods.push_back(new Rod("Rod of the Forgotten Depths", "Ultra Rare", 20, 30, 2500));
-  rods.push_back(new Rod("Rod of the Moonlit Hollow", "Ultra Rare", 20, 30, 1000));
+  rods.push_back(new Rod("Rod of the Forgotten Depths", "Ultra Rare", 12, 12, 2500));
+  rods.push_back(new Rod("Rod of the Moonlit Hollow", "Ultra Rare", 15, 15, 3000));
   
   // Legendary
   rods.push_back(new Rod("Rod of Shattered Skies", "Legendary", 28, 50, 1000));
@@ -433,6 +469,14 @@ int main() {
 
     commands["inventory"] = [&]() {
       showInventory(player);
+    };
+
+    commands["sell fish"] = [&]() {
+      sellAllFish(player);
+    };
+
+    commands["sell junk"] = [&]() {
+      sellAllJunk(player);
     };
 
     commands["end"] = [&]() {
