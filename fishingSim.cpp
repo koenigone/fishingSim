@@ -246,10 +246,10 @@ void catchFish(Player& player) {
   if (isCaughtFish) { // display resault
     std::cout << "\nFish caught:" << "\n";
     for (const Fish fish : caughtFish) {
-      std::cout << "Name: " << fish.name 
+      std::cout << fish.name 
                 << " size: " << fish.size 
-                << " value: " << fish.value << "\n";
-    }      
+                << " value: " << "$" <<fish.value <<"\n";
+    }
   }
 
   for (int j = 0; j < junkPositions.size(); j++) {
@@ -264,12 +264,12 @@ void catchFish(Player& player) {
     }
   }
 
-  if (isCaughtFish) { // display resault
+  if (isCaughtJunk) { // display resault
     std::cout << "\nJunk caught:" << "\n";
     for (const Junk junk : caughtJunk) {
-      std::cout << "Name: " << junk.name 
+      std::cout << junk.name 
                 << " size: " << junk.size 
-                << " value: " << junk.value << "\n";
+                << " value: " << "$" << junk.value << "\n";
     }      
   }
 
@@ -390,14 +390,26 @@ void showInventory(Player& p) {
   }
 }
 
+void showInfo() {
+  std::cout << "Welcome to the Fishing Game! In this game, players can fish, sell, and buy items.\n";
+  std::cout << "You start by casting your rod into the sea using the 'fish' command.\n";
+  std::cout << "Whatever lands on your hook is yours! whether it's a valuable fish or just junk.\n";
+  std::cout << "Sell your catches to earn money and upgrade to better rods by typing 'buy rod'.\n";
+  std::cout << "Start your fishing adventure by typing 'fish' below!";
+}
+
 void showStats(Player& p) {
   int currency = p.currency;
   std::string rodName = p.currentRod.name;
   int rodSize = p.currentRod.size;
   std::string rarity = p.currentRod.rarity;
+  int fishCount = p.fishBasket.size();
+  int junkCount = p.junkBasket.size();
 
-  std::cout << "Currency: " << currency << "\n";
-  std::cout << "Equipped Rod: " << rodName << " Size: " << rodSize << " Rarity: " << rarity;
+  std::cout << "Currency: " << "$" << currency << "\n";
+  std::cout << "Equipped Rod: " << rodName << " Size: " << rodSize << " Rarity: " << rarity << "\n";
+  std::cout << "Fish owned: " << fishCount << "\n";
+  std::cout << "Junk owned: " << junkCount;
 }
 
 // show a list of available commands
@@ -436,8 +448,8 @@ int main() {
   rods.push_back(new Rod("Rod of the Moonlit Hollow", "Ultra Rare", 15, 15, 3000));
   
   // Legendary
-  rods.push_back(new Rod("Rod of Shattered Skies", "Legendary", 28, 50, 1000));
-  rods.push_back(new Rod("Rod of Twilight's Reach", "Legendary", 25, 54, 9200));
+  rods.push_back(new Rod("Rod of Twilight's Reach", "Legendary", 25, 55, 9200));
+  rods.push_back(new Rod("Rod of Shattered Skies", "Legendary", 30, 50, 10000));
 
   std::unordered_map<std::string, std::function<void()>> commands;
   bool startGame = true;
@@ -477,6 +489,10 @@ int main() {
 
     commands["sell junk"] = [&]() {
       sellAllJunk(player);
+    };
+
+    commands["info"] = [&]() {
+      showInfo();
     };
 
     commands["end"] = [&]() {
