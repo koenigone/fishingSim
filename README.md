@@ -25,6 +25,7 @@ This is a console based fishing simulator developed in C++. The game allows play
 4-Run the executable: fishingSim.exe.
 
 
+
 **⚙️ Customization (Optional)**
 
 If you'd like to experiment with different rods or maximize your stats:
@@ -40,6 +41,7 @@ Default: height = 4, width = 4
 Maximum recommended: height = 30, width = 90
 
 Note: Exceeding the maximum values may cause the program to crash.
+
 
 
 **About the Project**
