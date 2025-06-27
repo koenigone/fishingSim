@@ -15,6 +15,7 @@ This is a console based fishing simulator developed in C++. The game allows play
 | `end`         | Ends the game.                                                                 |
 
 How to Play?
+
 1-Click the green <> Code button at the top right of this repository.
 2-Select Download ZIP.
 3-Extract the downloaded folder.
