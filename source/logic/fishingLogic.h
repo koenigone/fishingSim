@@ -1,9 +1,9 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "core/Player.h"
-#include "core/Fish.h"
-#include "core/Junk.h"
+#include "../core/Player.h"
+#include "../core/Fish.h"
+#include "../core/Junk.h"
 
 void drawSea(int seaY, int seaX,
              const std::vector<std::pair<int, int>>& fishPositions,

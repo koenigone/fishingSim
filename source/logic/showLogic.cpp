@@ -1,7 +1,7 @@
 #include <iostream>
 #include "showLogic.h"
-#include "core/Player.h"
-#include "core/Rod.h"
+#include "../core/Player.h"
+#include "../core/Rod.h"
 
 void showInfo() {
   std::cout << "Welcome to the Fishing Game! In this game, players can fish, sell, and buy items.\n";

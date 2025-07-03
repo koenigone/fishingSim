@@ -1,7 +1,7 @@
 #include <iostream>
 #include "shopLogic.h"
-#include "core/Fish.h"
-#include "core/Junk.h"
+#include "../core/Fish.h"
+#include "../core/Junk.h"
 
 void showFishBasket(Player& p) { // show current fish basket
   if (p.fishBasket.size() > 0) {

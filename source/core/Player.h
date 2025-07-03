@@ -1,5 +1,8 @@
 #pragma once
 #include <string>
+#include "Fish.h"
+#include "Junk.h"
+#include "Rod.h"
 
 class Player {
   public:
